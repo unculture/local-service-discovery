@@ -53,8 +53,23 @@ Client.prototype.stop = function() {
 };
 
 Client.prototype.updateServiceList = function(data, rinfo) {
+  data.announce_time = new Date().getTime();
   this.serviceList[rinfo.address + ":" + rinfo.port] = data;
+  this.cleanServiceList();
   this.emit('service-list-change', this.serviceList);
+};
+
+/**
+ * Removes entries that haven't been updated in over 30 seconds
+ */
+Client.prototype.cleanServiceList = function() {
+  for(var key in this.serviceList) {
+    if (this.serviceList.hasOwnProperty(key)) {
+      if ((new Date().getTime() - this.serviceList[key].announce_time) > 1000 * 30) {
+        delete this.serviceList[key];
+      }
+    }
+  }
 };
 
 exports.Client = Client;
